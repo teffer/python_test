@@ -1,6 +1,10 @@
+import os
+import re
+import uuid
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.db import models
+from PIL import Image
 # Create your models here.
 
 class CustomUserManager(BaseUserManager):
@@ -29,8 +33,18 @@ class CustomUser(AbstractBaseUser):
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['first_name', 'last_name', 'phone']
-
+    
     objects = CustomUserManager()
+    def save(self, *args, **kwargs):
+        if self.avatar:
+            img = Image.open(self.avatar)
+            img.thumbnail((200, 200), Image.ANTIALIAS)
+            base, ext = os.path.splitext(self.avatar.name)
+            new_name = f"{uuid.uuid4().hex}{ext}"
+            self.avatar.name = new_name
+            
+            img.save(self.avatar.path)
+        super().save(*args, **kwargs)
 
 class Organization(models.Model):
     name = models.CharField(max_length=100)

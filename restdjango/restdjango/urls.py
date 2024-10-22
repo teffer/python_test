@@ -16,7 +16,15 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from simpleorg.views import UserRegisterView, UserProfileView, UserListView, OrganizationCreateView, OrganizationListView, OrganizationDetailView, CustomTokenObtainPairView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('register/', UserRegisterView.as_view(), name='register'),
+    path('profile/<int:pk>/', UserProfileView.as_view(), name='user-profile'),
+    path('users/', UserListView.as_view(), name='user-list'),
+    path('organizations/', OrganizationListView.as_view(), name='organization-list'),
+    path('organizations/create/', OrganizationCreateView.as_view(), name='organization-create'),
+    path('organizations/<int:pk>/', OrganizationDetailView.as_view(), name='organization-detail'),
+    path('api/token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
 ]
