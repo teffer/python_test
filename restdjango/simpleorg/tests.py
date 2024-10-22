@@ -76,7 +76,8 @@ class UserModelTest(TestCase):
             'password': 'testpass'
         })
         print('\n')
-        print(response.content) 
+        print(response.status_code)
+        print(response.data)  
         print('\n')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('access', response.data)

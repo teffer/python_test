@@ -28,22 +28,35 @@ class CustomUserCreateSerializer(serializers.ModelSerializer):
     
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     email = serializers.EmailField(required=True)
-
     @classmethod
     def get_token(cls, user):
         token = super().get_token(user)
         token['email'] = user.email
+        print("Token generated:", token)
         return token
-
-    @classmethod
-    def validate(cls, attrs):
+    
+    def create(self, validated_data):
+        print('creat called')
+        user = validated_data['user']
+        print(user)
+        user_data = CustomUserSerializer(user).data
+        token = self.get_token(user)
+        return {
+            'refresh': str(token),
+            'access': str(token),
+            'user': user_data 
+        }
+    def validate(self, attrs):
         email = attrs.get('email')
         password = attrs.get('password')
-        try:
-            user = CustomUser.objects.get(email=email)
-        except CustomUser.DoesNotExist:
-            raise serializers.ValidationError('User with this email does not exist.')
-
-        if not user.check_password(password):
-            raise serializers.ValidationError('Invalid credentials.')
-        return super().validate(attrs)
+        user = CustomUser.objects.filter(email=email).first()
+        if user is None or not user.check_password(password):
+            raise serializers.ValidationError({'non_field_errors': ['Invalid credentials']})
+        token = self.get_token(user)
+        response_data = {
+            'refresh': str(token),
+            'access': str(token),
+            'user': CustomUserSerializer(user).data 
+        }
+        print(response_data)
+        return response_data
